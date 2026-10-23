@@ -78,6 +78,7 @@ function Shell() {
   const [page, setPage] = useState<Page>("agent");
   const [task, setTask] = useState("");
   const [drawer, setDrawer] = useState(false);
+  const litePage = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
   const [collapsed, setCollapsed] = useState<boolean>(() => localStorage.getItem(SIDEBAR_KEY) === "1");
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
 
@@ -134,7 +135,7 @@ function Shell() {
   );
 
   return (
-    <div className="relative flex h-[100dvh] w-screen overflow-hidden">
+    <div className="relative flex h-[100dvh] w-full overflow-hidden overflow-x-hidden">
       <Background />
 
       {/* Desktop / iPad fixed glass sidebar */}
@@ -208,9 +209,9 @@ function Shell() {
           <AnimatePresence mode="wait">
             <motion.div
               key={page}
-              initial={{ opacity: 0, y: 14, filter: "blur(10px)", scale: 0.996 }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
-              exit={{ opacity: 0, y: -10, filter: "blur(8px)", scale: 0.997 }}
+              initial={litePage ? { opacity: 0 } : { opacity: 0, y: 14, filter: "blur(10px)", scale: 0.996 }}
+              animate={litePage ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
+              exit={litePage ? { opacity: 0 } : { opacity: 0, y: -10, filter: "blur(8px)", scale: 0.997 }}
               transition={{ type: "spring", stiffness: 300, damping: 32 }}
               className="h-full min-h-0"
             >
@@ -236,14 +237,15 @@ function Shell() {
 
 function Gate() {
   const { authed } = useApp();
+  const lite = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
   return (
     <AnimatePresence mode="wait">
       {authed ? (
-        <motion.div key="app" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="h-full">
+        <motion.div key="app" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: lite ? 0.25 : 0.4 }} className="h-full">
           <Shell />
         </motion.div>
       ) : (
-        <motion.div key="lock" exit={{ opacity: 0, scale: 1.02, filter: "blur(12px)" }} transition={{ duration: 0.45 }} className="h-full">
+        <motion.div key="lock" exit={lite ? { opacity: 0 } : { opacity: 0, scale: 1.02, filter: "blur(12px)" }} transition={{ duration: 0.45 }} className="h-full">
           <Background />
           <Lockscreen />
         </motion.div>
