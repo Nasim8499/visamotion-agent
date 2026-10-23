@@ -45,6 +45,10 @@ export default function Lockscreen() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // On phones/tablets: don't auto-focus — the on-screen keyboard would jump up
+    // and squash the layout the moment the page opens. User taps the field instead.
+    const touch = typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+    if (touch) return;
     const t = window.setTimeout(() => inputRef.current?.focus(), 450);
     return () => window.clearTimeout(t);
   }, []);
@@ -68,7 +72,7 @@ export default function Lockscreen() {
   };
 
   return (
-    <div className="safe-top safe-bottom relative flex min-h-[100dvh] w-full flex-col overflow-y-auto overflow-x-hidden px-5 py-6">
+    <div className="safe-top safe-bottom relative flex min-h-[100dvh] w-full flex-col overflow-y-auto overflow-x-hidden px-5 py-6 [scrollbar-gutter:stable]">
       {/* header */}
       <div className="relative z-10 flex items-center justify-between">
         <div className="flex items-center gap-3">
