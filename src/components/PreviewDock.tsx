@@ -59,18 +59,57 @@ export default function PreviewDock() {
 
   const d = devices[device];
   const scale = 1;
+  const fullScreen = device === "phone";
 
   return (
     <AnimatePresence>
       {previewDock && (
         <motion.div
-          initial={{ y: 40, opacity: 0, scale: 0.96 }}
-          animate={{ y: 0, opacity: 1, scale }}
-          exit={{ y: 40, opacity: 0, scale: 0.96 }}
+          initial={fullScreen ? { opacity: 0, y: "100%" } : { y: 40, opacity: 0, scale: 0.96 }}
+          animate={fullScreen ? { opacity: 1, y: 0 } : { y: 0, opacity: 1, scale }}
+          exit={fullScreen ? { opacity: 0, y: "100%" } : { y: 40, opacity: 0, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 320, damping: 30 }}
-          className="fixed bottom-3 left-1/2 z-50 -translate-x-1/2"
-          style={{ width: Math.min(d.w, window.innerWidth - 24) }}
+          className={fullScreen ? "safe-top safe-bottom fixed inset-0 z-[70] flex flex-col bg-black" : "fixed bottom-3 left-1/2 z-50 -translate-x-1/2"}
+          style={fullScreen ? undefined : { width: Math.min(d.w, window.innerWidth - 24) }}
         >
+          {fullScreen ? (
+            <>
+              <div className="flex h-11 shrink-0 items-center gap-2 bg-black px-3 text-white">
+                <MonitorPlay className="h-4 w-4 text-white/70" />
+                <span className="truncate text-[12.5px] font-medium">{live ? hostOf(live) : "live session"}</span>
+                {src && (
+                  <button
+                    onClick={() => window.open(src, "_blank", "noopener,noreferrer")}
+                    className="ml-auto grid h-8 w-8 place-items-center rounded-full bg-white/10 hover:bg-white/20"
+                    title="Open live view in a new tab"
+                  >
+                    <ExternalLink className="h-4 w-4 text-white/90" />
+                  </button>
+                )}
+                <button onClick={togglePreviewDock} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 hover:bg-white/20" title="Close preview">
+                  <X className="h-4 w-4 text-white/90" />
+                </button>
+              </div>
+              <div className="relative min-h-0 flex-1 bg-white">
+                {src ? (
+                  <iframe src={src} title="Agent live preview" allow="autoplay; clipboard-read; clipboard-write" className="absolute inset-0 h-full w-full border-0 bg-white" />
+                ) : (
+                  <div className="absolute inset-0 grid place-items-center bg-[#f7f8fa] p-6 text-center">
+                    <div>
+                      <MonitorPlay className="mx-auto h-8 w-8 text-neutral-300" />
+                      <div className="mt-2 text-[13px] font-medium text-neutral-500">
+                        {run.status === "starting" || run.status === "ready" || run.status === "working"
+                          ? "Connecting to the cloud browser…"
+                          : "Run the agent — the live view appears here"}
+                      </div>
+                      <div className="mt-1 text-[11px] text-neutral-400">browser.ready attaches the live session automatically</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+          <>
           <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-1 rounded-full bg-black/75 px-2 py-1 backdrop-blur">
               {(["phone", "ipad", "win"] as DeviceKind[]).map((k) => (
@@ -120,6 +159,8 @@ export default function PreviewDock() {
               )}
             </div>
           </div>
+          </>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
